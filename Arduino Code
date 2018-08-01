@@ -1,0 +1,42 @@
+/*-----( Import needed libraries )-----*/
+#include <NewPing.h>
+#include <LiquidCrystal.h>
+/*-----( Declare Constants and Pin Numbers )-----*/
+#define TRIGGER_PIN  7  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN  8  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define MAX_DISTANCE  200
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
+/*-----( Declare Variables )-----*/
+int LEDPin = 13; //An LED to indicate when one is in Pullup range
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+int distance; //A varible to hold distance from ultrasonic
+int pullUp = 0; //used to count pullups
+boolean isUp = false; //Our flag for knowing our state.
+
+void setup()   /****** SETUP: RUNS ONCE ******/
+{
+  Serial.begin(9600);
+  pinMode(LEDPin, OUTPUT); // Use LED indicator (if required)
+  lcd.begin(16, 2); // lcd rows and columns
+  lcd.print("Pull-Ups:"); // title of sorts
+}//--(end setup )---
+
+
+void loop()   /****** LOOP: RUNS CONSTANTLY ******/
+{
+  delay(50);// Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
+  distance = sonar.ping_cm();
+
+  if( distance > 25 && isUp ){
+    isUp = false;
+    digitalWrite(LEDPin, LOW);
+  }
+
+  if( distance < 24 && distance != 0 && !isUp){
+      isUp = true;
+      pullUp ++;
+      digitalWrite(LEDPin, HIGH);
+      lcd.setCursor(10, 0);
+      lcd.print(pullUp);
+  }
+}
